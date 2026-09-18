@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW" class="w-full m-0 p-0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校務應用系統 (Google Apps Script)</title>
+  <style>
+    /* 確保頁面流暢自然隨高度延展 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background-color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* WCAG 2.4.1: 鍵盤快速跳過鏈結 (僅在 Tab 獲取焦點時顯示) */
+    .skip-link {
+      position: absolute;
+      top: -60px;
+      left: 16px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      border-radius: 0 0 8px 8px;
+      z-index: 99999;
+      text-decoration: none;
+      transition: top 0.2s ease-in-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .skip-link:focus {
+      top: 0;
+      outline: 3px solid #2563eb;
+      outline-offset: 2px;
+    }
+
+    /* 滿版無邊框、自適應高度 iframe 樣式 */
+    .fullscreen-frame {
+      width: 100%;
+      /* 預設為全視窗高度，收到內部高度訊息時會透過 JavaScript 動態變更為實際像素高度 */
+      height: 100vh;
+      min-height: 100vh;
+      border: 0;
+      display: block;
+      margin: 0;
+      padding: 0;
+      transition: height 0.15s ease-out;
+    }
+
+    /* WCAG 2.4.7: 焦點顯著性規範 */
+    iframe:focus-visible {
+      outline: 2px solid #2563eb;
+    }
+  </style>
+</head>
+<body class="w-full m-0 p-0">
+  <!-- 鍵盤無障礙快速跳入 iframe -->
+  <a href="#main-app-frame" class="skip-link">跳至嵌入應用系統 (Skip to Embedded App)</a>
+
+  <main role="main" class="w-full m-0 p-0">
+    <iframe
+      id="main-app-frame"
+      src="https://script.google.com/a/macros/thyes.ntpc.edu.tw/s/AKfycbz-f-Ug-fTMuoITcm7KKRIR5dLc1k2B2imCZR2YWYxfwCTtKENMDFgL_eOIXNpTzo9J/exec"
+      title="校務應用系統 (Google Apps Script)"
+      class="fullscreen-frame"
+      scrolling="auto"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-top-navigation-by-user-activation"
+      allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; microphone; midi; clipboard-read; clipboard-write;"
+    >
+      <p>您的環境不支援 iframe 框架展示，請<a href="https://script.google.com/a/macros/thyes.ntpc.edu.tw/s/AKfycbz-f-Ug-fTMuoITcm7KKRIR5dLc1k2B2imCZR2YWYxfwCTtKENMDFgL_eOIXNpTzo9J/exec" target="_blank" rel="noopener noreferrer">點此開啟</a>。</p>
+    </iframe>
+  </main>
+
+  <script>
+    (function () {
+      const frame = document.getElementById('main-app-frame');
+
+      // 監聽來自嵌入子網頁傳來的高度通知訊息 (postMessage)
+      window.addEventListener('message', function (event) {
+        if (!event || !event.data) return;
+
+        let detectedHeight = null;
+
+        // 支援多種常見 postMessage 格式 (數值、物件、JSON 字串)
+        if (typeof event.data === 'number') {
+          detectedHeight = event.data;
+        } else if (typeof event.data === 'object') {
+          if (event.data.frameHeight || event.data.height) {
+            detectedHeight = event.data.frameHeight || event.data.height;
+          }
+        } else if (typeof event.data === 'string') {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (parsed && (parsed.frameHeight || parsed.height)) {
+              detectedHeight = parsed.frameHeight || parsed.height;
+            }
+          } catch (e) {
+            // 忽略非 JSON 字串
+          }
+        }
+
+        // 動態將 iframe 高度設定為子頁面回報的實際內容高度
+        if (detectedHeight && !isNaN(detectedHeight) && detectedHeight > 50) {
+          frame.style.height = detectedHeight + 'px';
+          frame.style.minHeight = detectedHeight + 'px';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
